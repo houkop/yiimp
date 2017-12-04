@@ -381,7 +381,7 @@ if ($coin->id) {
 	echo "gen=0\n";
 	echo "\n";
 	echo "alertnotify=echo %s | mail -s \"{$coin->name} alert!\" ".YAAMP_ADMIN_EMAIL."\n";
-	echo "blocknotify=blocknotify ".YAAMP_STRATUM_URL.":$port {$coin->id} %s\n";
+	echo "blocknotify=/var/stratum/blocknotify ".YAAMP_STRATUM_URL.":$port {$coin->id} %s\n";
 	echo CHtml::closetag("pre");
 
 	echo CHtml::tag("hr");
