@@ -48,7 +48,7 @@ echo "</thead>";
 
 $total_pending = 0;
 
-if($show_details)
+if(false)//$show_details)
 {
 	$t1 = microtime(true);
 
@@ -99,14 +99,26 @@ if($show_details)
 
 //////////////////////////////////////////////////////////////////////////////
 
-// $confirmed = bitcoinvaluetoa(controller()->memcache->get_database_scalar("wallet_confirmed-$user->id",
-// 	"select sum(amount*price) from earnings where status=1 and userid=$user->id"))/$refcoin->price;
+//$confirmed = bitcoinvaluetoa(controller()->memcache->get_database_scalar("wallet_confirmed-$user->id",
+//	"select sum(amount*price) from earnings where status=1 and userid=$user->id"))/$refcoin->price;
 
-// $unconfirmed = bitcoinvaluetoa(controller()->memcache->get_database_scalar("wallet_unconfirmed-$user->id",
-// 	"select sum(amount*price) from earnings where status=0 and userid=$user->id"))/$refcoin->price;
+//$unconfirmed = bitcoinvaluetoa(controller()->memcache->get_database_scalar("wallet_unconfirmed-$user->id",
+//	"select sum(amount*price) from earnings where status=0 and userid=$user->id"))/$refcoin->price;
 
-$confirmed = yaamp_convert_earnings_user($user, "status=1");
-$unconfirmed = yaamp_convert_earnings_user($user, "status=0");
+//$confirmed = bitcoinvaluetoa(controller()->memcache->get_database_scalar("wallet_confirmed-$user->id","select sum(amount*price) from earnings where status=1 and userid=$user->id"))/$refcoin->price;
+
+//$unconfirmed = bitcoinvaluetoa(controller()->memcache->get_database_scalar("wallet_unconfirmed-$user->id","select sum(amount*price) from earnings where status=0 and userid=$user->id"))/$refcoin->price;
+
+$confirmed = controller()->memcache->get_database_scalar("wallet_confirmed-$user->id",
+				"select sum(amount) from earnings where status=1 and userid=$user->id");
+$unconfirmed = controller()->memcache->get_database_scalar("wallet_unconfirmed-$user->id",
+				"select sum(amount) from earnings where status=0 and userid=$user->id");
+
+			$confirmed = bitcoinvaluetoa($confirmed);
+			$unconfirmed = bitcoinvaluetoa($unconfirmed);
+
+//$confirmed = yaamp_convert_earnings_user($user, "status=1");
+//$unconfirmed = yaamp_convert_earnings_user($user, "status=0");
 
 $total_unsold = bitcoinvaluetoa($confirmed + $unconfirmed);
 $confirmed = $confirmed? bitcoinvaluetoa($confirmed): '';
@@ -114,7 +126,7 @@ $unconfirmed = $unconfirmed? bitcoinvaluetoa($unconfirmed): '';
 //$total_usd = number_format($total_unsold*$mining->usdbtc*$refcoin->price, 3, '.', ' ');
 $total_pending = bitcoinvaluetoa($total_pending);
 
-if(!$show_details && $total_unsold > 0)
+/*if(!$show_details )//&& $total_unsold > 0)
 {
 	echo '
 	<tr><td colspan="6" align="right">
@@ -123,7 +135,7 @@ if(!$show_details && $total_unsold > 0)
 			Show Details
 		</label>
 	</td></tr>';
-}
+}*/
 
 echo '<tr class="ssrow" style="border-top: 3px solid #eee;">';
 
@@ -168,7 +180,8 @@ echo "</tr>";
 
 ////////////////////////////////////////////////////////////////////////////
 
-$total_unpaid = bitcoinvaluetoa($balance + $total_unsold);
+$total_unpaid = bitcoinvaluetoa($balance + $confirmed);
+//$total_unpaid = bitcoinvaluetoa($balance + $total_unsold);
 //$total_unpaid_usd = number_format($total_unpaid*$mining->usdbtc*$refcoin->price, 3, '.', ' ');
 
 echo "<tr class='ssrow' style='border-top: 3px solid #eee;'>";
@@ -180,9 +193,24 @@ echo "</tr>";
 
 ////////////////////////////////////////////////////////////////////////////
 
+$total_unpaid_unconfirmed = bitcoinvaluetoa($balance + $confirmed + $unconfirmed);
+//$total_unpaid = bitcoinvaluetoa($balance + $total_unsold);
+//$total_unpaid_usd = number_format($total_unpaid*$mining->usdbtc*$refcoin->price, 3, '.', ' ');
+
+echo "<tr class='ssrow' style='border-top: 3px solid #eee;'>";
+echo "<td><img width=16 src='$refcoin->image'></td>";
+echo "<td colspan=3><b>Total Unpaid</b></td>";
+echo "<td align=right style='font-size: .8em;'></td>";
+echo "<td align=right style='font-size: .9em;'>$total_unpaid_unconfirmed $refcoin->symbol</td>";
+echo "</tr>";
+
+////////////////////////////////////////////////////////////////////////////
+
 $total_paid = controller()->memcache->get_database_scalar("wallet_total_paid-$user->id",
 	"select sum(amount) from payouts where account_id=$user->id");
-
+//$total_paid = dboscalar('select sum(amount) from payouts where account_id=$user->id', array());
+//$total_paid = controller()->memcache->get_database_scalar("wallet_total_paid-$user->id",
+//    "select sum(amount) from payouts where account_id=$user->id",array(),1);
 $total_paid = bitcoinvaluetoa($total_paid);
 //$total_paid_usd = number_format($total_paid*$mining->usdbtc*$refcoin->price, 3, '.', ' ');
 
@@ -197,7 +225,8 @@ echo "</tr>";
 
 //$delay = 7*24*60*60;
 
-$total_earned = bitcoinvaluetoa($total_unsold + $balance + $total_paid);
+$total_earned = bitcoinvaluetoa($total_unpaid + $total_paid);
+//$total_earned = bitcoinvaluetoa($total_unsold + $balance + $total_paid);
 //$total_earned_usd = number_format($total_earned*$mining->usdbtc*$refcoin->price, 3, '.', ' ');
 
 echo "<tr class='ssrow' style='border-top: 3px solid #eee;'>";
@@ -329,9 +358,3 @@ echo "</table><br>";
 echo "</div>";
 
 echo "</div><br>";
-
-
-
-
-
-
