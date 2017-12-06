@@ -72,7 +72,7 @@ echo "</table>";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-$workers = getdbolist('db_workers', "userid=$user->id order by password");
+$workers = getdbolist('db_workers', "userid=$user->id order by worker");
 if(count($workers))
 {
 	echo "<br>";
